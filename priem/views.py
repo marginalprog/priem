@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.contrib.auth import login
+from django.contrib.auth import login, logout, authenticate
+
 
 # Create your views here.
+def mainpage(request):
+    return render(request, 'priem/mainpage.html')
 
 
 def signupuser(request):
@@ -18,9 +21,30 @@ def signupuser(request):
                 login(request, user)
                 return redirect('homepage')  # !!! Перенаправление на ниже созданное отображение
             else:
-                return render(request, "priem/signupuser.html", {'form': UserCreationForm(), 'error':'Пароли не совпадают'})
+                return render(request, "priem/signupuser.html",
+                              {'form': UserCreationForm(), 'error': 'Пароли не совпадают'})
         except IntegrityError:
-            return render(request, "priem/signupuser.html",{'form': UserCreationForm(), 'error': 'Данный пользователь уже существует'})
+            return render(request, "priem/signupuser.html",
+                          {'form': UserCreationForm(), 'error': 'Данный пользователь уже существует'})
+
+
+def loginuser(request):
+    if request.method == 'GET':
+        return render(request, "priem/loginuser.html", {'form': AuthenticationForm()})
+    else:  # == "POST"
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        if user is None:
+            return render(request, "priem/signupuser.html",
+                              {'form': AuthenticationForm(), 'error': 'Пароль пользователя неверный'})
+        else:
+            login(request, user)
+            return redirect('homepage')
+
+
+def logoutuser(request):
+    if request.method == 'POST':
+        logout(request)
+        return redirect('mainpage')
 
 
 def homepage(request):

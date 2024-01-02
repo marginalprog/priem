@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+
+</head>
+<body>
+    {%  if user.is_authenticated %}
+        Вошли как {{ user.username }}
+        <form action="{%  url 'logoutuser' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit">Выйти</button>
+        </form>
+    {% else %}
+        <a href="{% url 'signupuser' %}">Зарегистрироваться</a>
+        <a href="{% url 'loginuser' %}">Войти</a>
+    {% endif %}
+    <br><br>
+    {% block content %}{% endblock %}
+</body>
+</html>

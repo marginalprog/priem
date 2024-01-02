@@ -23,7 +23,11 @@ urlpatterns = [
 
     # auth
     path('signup/', views.signupuser, name='signupuser'),
+    path('logout/', views.logoutuser, name='logoutuser'),
+    path('login/', views.loginuser, name='loginuser'),
 
+    # main
+    path('', views.mainpage, name='mainpage'),
     # home
     path('home/', views.homepage, name='homepage'),
 
