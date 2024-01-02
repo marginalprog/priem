@@ -16,11 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from  priem import views
+from priem import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     # auth
     path('signup/', views.signupuser, name='signupuser'),
+
+    # home
+    path('home/', views.homepage, name='homepage'),
+
 ]
