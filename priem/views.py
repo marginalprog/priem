@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.contrib.auth import login, logout, authenticate
+from .forms import SurveyForm
 
 
 # Create your views here.
@@ -45,6 +46,13 @@ def logoutuser(request):
     if request.method == 'POST':
         logout(request)
         return redirect('mainpage')
+
+
+def sendsurvey(request):
+    if request.method == 'GET':
+        return render(request, "priem/survey.html", {'form': SurveyForm()})
+    else:
+        pass
 
 
 def homepage(request):

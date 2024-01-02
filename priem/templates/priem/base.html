@@ -6,7 +6,7 @@
 </head>
 <body>
     {%  if user.is_authenticated %}
-        Вошли как {{ user.username }}
+        Здравствуйте, {{ user.username }}
         <form action="{%  url 'logoutuser' %}" method="POST">
             {% csrf_token %}
             <button type="submit">Выйти</button>

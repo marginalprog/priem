@@ -31,4 +31,6 @@ urlpatterns = [
     # home
     path('home/', views.homepage, name='homepage'),
 
+    path('survey/', views.sendsurvey, name='sendsurvey'),
+
 ]
