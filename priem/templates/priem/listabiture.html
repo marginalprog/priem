@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Абитуриенты</title>
+</head>
+<body>
+    {% extends 'priem/base.html' %}
+    {% block content %}
+        <h2 style="color:red">{{ error }}</h2>
+        Список абитуриентов
+
+        <table>
+            <tr>
+                <th>Имя</th>
+                <th>Город</th>
+                <th>Баллы</th>
+                <th>Направление</th>
+            </tr>
+            {% for item in query_surveys %}
+            <tr>
+                <td>{{ item.user }}</td>
+                <td>{{ item.city }}</td>
+                <td>{{ item.points }}</td>
+                <td>{{ item.main_direction }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endblock %}
+</body>
+</html>

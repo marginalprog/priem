@@ -33,4 +33,6 @@ urlpatterns = [
 
     path('survey/', views.sendsurvey, name='sendsurvey'),
 
+    path('abiture/', views.listabiture, name='listabiture'),
+
 ]

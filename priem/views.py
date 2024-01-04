@@ -1,17 +1,26 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.contrib.auth import login, logout, authenticate
-from django.urls import reverse
-from django.utils.http import urlencode
-
 from .forms import SurveyForm
 from .models import Survey
 
 
 # Create your views here.
 def mainpage(request):
+    if request.user.is_authenticated:
+        try:  # Если объект в модели (запись) были созданы ранее, то выполняем код
+            obj = Survey.objects.get(user=request.user)
+            # Объект существует
+            if obj.is_form_filled:
+                if obj.worker:
+                    return redirect('listabiture')
+                else:
+                    return redirect('homepage')
+        except Survey.DoesNotExist:  # Если анкету не заполняли - перенаправление на форму
+            return redirect('sendsurvey')
     return render(request, 'priem/mainpage.html')
 
 
@@ -48,22 +57,32 @@ def loginuser(request):
                 # Объект существует
                 if obj.is_form_filled:
                     if obj.worker:
-                        return redirect('mainpage')
+                        return redirect('listabiture')
                     else:
                         return redirect('homepage')
             except Survey.DoesNotExist:  # Если анкету не заполняли - перенаправление на форму
                 return redirect('sendsurvey')
 
 
+@login_required
 def logoutuser(request):
     if request.method == 'POST':
         logout(request)
         return redirect('mainpage')
 
 
+@login_required
 def sendsurvey(request):
     if request.method == 'GET':
-        return render(request, "priem/survey.html", {'form': SurveyForm()})
+        try:  # Если объект в модели (запись) были созданы ранее, то выполняем код
+            obj = Survey.objects.get(user=request.user)
+            if obj.is_form_filled:
+                if obj.worker:
+                    return redirect('listabiture')
+                else:
+                    return redirect('homepage')
+        except Survey.DoesNotExist:
+            return render(request, "priem/survey.html", {'form': SurveyForm()})
     else:
         try:
             form = SurveyForm(request.POST)
@@ -71,12 +90,20 @@ def sendsurvey(request):
             newsurvey.user = request.user
             newsurvey.save()
             if form.cleaned_data.get('worker'):  # Если работник комиссии
-                return redirect('mainpage')
+                return redirect('listabiture')
             else:
-                return redirect('mainpage')
+                return redirect('homepage')
         except ValueError:
             return render(request, 'priem/survey.html', {'form': SurveyForm(), 'error': 'Введены некорректные данные'})
 
 
+@login_required
+def listabiture(request):
+    # query_surveys = Survey.objects.filter(worker=False)
+    query_surveys = Survey.objects.select_related('user').filter(worker=False)
+    return render(request, "priem/listabiture.html", {'query_surveys': query_surveys})
+
+
+@login_required
 def homepage(request):
     return render(request, "priem/homepage.html")
