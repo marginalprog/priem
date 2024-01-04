@@ -1,9 +1,13 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.contrib.auth import login, logout, authenticate
+from django.urls import reverse
+from django.utils.http import urlencode
+
 from .forms import SurveyForm
+from .models import Survey
 
 
 # Create your views here.
@@ -36,10 +40,19 @@ def loginuser(request):
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
         if user is None:
             return render(request, "priem/signupuser.html",
-                              {'form': AuthenticationForm(), 'error': 'Пароль пользователя неверный'})
+                          {'form': AuthenticationForm(), 'error': 'Пароль пользователя неверный'})
         else:
             login(request, user)
-            return redirect('homepage')
+            try:  # Если объект в модели (запись) были созданы ранее, то выполняем код
+                obj = Survey.objects.get(user=request.user)
+                # Объект существует
+                if obj.is_form_filled:
+                    if obj.worker:
+                        return redirect('mainpage')
+                    else:
+                        return redirect('homepage')
+            except Survey.DoesNotExist:  # Если анкету не заполняли - перенаправление на форму
+                return redirect('sendsurvey')
 
 
 def logoutuser(request):
@@ -52,7 +65,17 @@ def sendsurvey(request):
     if request.method == 'GET':
         return render(request, "priem/survey.html", {'form': SurveyForm()})
     else:
-        pass
+        try:
+            form = SurveyForm(request.POST)
+            newsurvey = form.save(commit=False)
+            newsurvey.user = request.user
+            newsurvey.save()
+            if form.cleaned_data.get('worker'):  # Если работник комиссии
+                return redirect('mainpage')
+            else:
+                return redirect('mainpage')
+        except ValueError:
+            return render(request, 'priem/survey.html', {'form': SurveyForm(), 'error': 'Введены некорректные данные'})
 
 
 def homepage(request):
